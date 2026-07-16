@@ -32,13 +32,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.prefs.Preferences;
+
 
 /**
  * The dialog to show the FSM
  */
 public class FSMFrame extends JFrame implements ClosingWindowListener.ConfirmSave, FSM.ModifiedListener, FileHistory.OpenInterface {
-    private static final Preferences PREFS = Preferences.userRoot().node("dig").node("fsm");
+    private static final Prefs PREFS = Prefs.userRoot().node("dig").node("fsm");
     private static final String PREF_FOLDER = "folder";
     private static final Icon ICON_NEW = IconCreator.create("document-new.png");
     private static final Icon ICON_OPEN = IconCreator.create("document-open.png");

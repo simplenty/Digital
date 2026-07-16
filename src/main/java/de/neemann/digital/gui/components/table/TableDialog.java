@@ -69,7 +69,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.prefs.Preferences;
+
 
 import static de.neemann.digital.analyse.ModelAnalyser.addOne;
 
@@ -78,7 +78,7 @@ import static de.neemann.digital.analyse.ModelAnalyser.addOne;
  */
 public class TableDialog extends JDialog {
     private static final Logger LOGGER = LoggerFactory.getLogger(TableDialog.class);
-    private static final Preferences PREFS = Preferences.userRoot().node("dig").node("generator");
+    private static final Prefs PREFS = Prefs.userRoot().node("dig").node("generator");
     private static final Color MYGRAY = new Color(230, 230, 230);
     private static final Color ODDWHITE = new Color(255, 255, 220);
     private static final List<Key> LIST = new ArrayList<>();

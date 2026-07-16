@@ -5,13 +5,13 @@
  */
 package de.neemann.digital.gui;
 
+import de.neemann.gui.Prefs;
 import de.neemann.gui.ToolTipAction;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.prefs.Preferences;
 
 /**
  * History of last opened files
@@ -24,7 +24,7 @@ public final class FileHistory {
 
     private final ArrayList<File> files;
     private final OpenInterface opener;
-    private final Preferences prefs;
+    private final Prefs prefs;
     private JMenu menu;
     private JMenu menuNewWindow;
 
@@ -41,7 +41,7 @@ public final class FileHistory {
      * @param opener the opene interface to be used to open a file
      */
     public FileHistory(OpenInterface opener) {
-        this(opener, Preferences.userRoot().node("dig").node("hist"));
+        this(opener, Prefs.userRoot().node("dig").node("hist"));
     }
 
     /**
@@ -50,7 +50,7 @@ public final class FileHistory {
      * @param opener the opene interface to be used to open a file
      * @param prefs  the preferences node to store the history
      */
-    public FileHistory(OpenInterface opener, Preferences prefs) {
+    public FileHistory(OpenInterface opener, Prefs prefs) {
         this.opener = opener;
         this.prefs = prefs;
         int n = prefs.getInt(FILE_NUM, 0);

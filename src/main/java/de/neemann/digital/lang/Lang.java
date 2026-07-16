@@ -5,6 +5,7 @@
  */
 package de.neemann.digital.lang;
 
+import de.neemann.gui.Prefs;
 import de.neemann.gui.language.Bundle;
 import de.neemann.gui.language.Language;
 import de.neemann.gui.language.Resources;
@@ -12,13 +13,12 @@ import de.neemann.gui.language.Resources;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Locale;
-import java.util.prefs.Preferences;
 
 /**
  *
  */
 public final class Lang {
-    private static final Preferences PREFS = Preferences.userRoot().node("dig");
+    private static final Prefs PREFS = Prefs.userRoot().node("dig");
     private static final String LANGUAGE = "lang";
 
     private static class InstanceHolder {

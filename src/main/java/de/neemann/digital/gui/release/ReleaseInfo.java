@@ -6,6 +6,7 @@
 package de.neemann.digital.gui.release;
 
 
+import de.neemann.gui.Prefs;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -13,7 +14,6 @@ import org.json.JSONTokener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.prefs.Preferences;
 
 /**
  * Checks for new releases
@@ -33,7 +33,7 @@ public final class ReleaseInfo {
     ReleaseInfo() throws IOException {
         try {
             readReleaseInfo(RELEASE_URL_NEW);
-            Preferences.userRoot().node("dig").put("newname", "DigitaSi");
+            Prefs.userRoot().node("dig").put("newname", "DigitaSi");
         } catch (IOException e) {
             readReleaseInfo(RELEASE_URL);
         }

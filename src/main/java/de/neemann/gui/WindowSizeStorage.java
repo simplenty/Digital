@@ -8,16 +8,15 @@ package de.neemann.gui;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.util.prefs.Preferences;
 
 /**
  * Used to store the window size
  */
 public final class WindowSizeStorage {
-    private static final Preferences PREFS = Preferences.userRoot().node("dig").node("win");
+    private static final Prefs PREFS = Prefs.userRoot().node("dig").node("win");
     private static final String WIDTH_KEY = "width";
     private static final String HEIGHT_KEY = "height";
-    private final Preferences prefs;
+    private final Prefs prefs;
     private int defWidth = 1024;
     private int defHeight = 768;
 

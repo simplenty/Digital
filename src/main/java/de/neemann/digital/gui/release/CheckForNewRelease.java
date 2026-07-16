@@ -7,11 +7,11 @@ package de.neemann.digital.gui.release;
 
 import de.neemann.digital.lang.Lang;
 import de.neemann.gui.InfoDialog;
+import de.neemann.gui.Prefs;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
-import java.util.prefs.Preferences;
 
 /**
  * Helper to check for a new release.
@@ -21,7 +21,7 @@ public final class CheckForNewRelease {
     private static final long ADAY = 24L * 60 * 60 * 1000;
     private static final String PREF_LAST = "last";
     private static final String PREF_ASKED = "asked";
-    private static final Preferences PREFS = Preferences.userRoot().node("dig").node("rev");
+    private static final Prefs PREFS = Prefs.userRoot().node("dig").node("rev");
 
     private CheckForNewRelease() {
     }

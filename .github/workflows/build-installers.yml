@@ -1,0 +1,148 @@
+name: Build installers
+
+on:
+  push:
+    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      win_console:
+        description: 'Attach a console to the Windows exe (debug launch failures)'
+        type: boolean
+        default: false
+
+concurrency:
+  group: build-installers-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            arch: amd64
+            type: exe
+            artifact: Digital-*.exe
+            name_suffix: ""
+          - os: ubuntu-latest
+            arch: amd64
+            type: deb
+            artifact: Digital-*-amd64.deb
+            name_suffix: "-amd64"
+          - os: ubuntu-latest
+            arch: amd64
+            type: rpm
+            artifact: Digital-*-amd64.rpm
+            name_suffix: "-amd64"
+          - os: ubuntu-latest
+            arch: amd64
+            type: appimage
+            artifact: Digital-*-amd64.AppImage
+            name_suffix: "-amd64"
+          - os: ubuntu-24.04-arm
+            arch: arm64
+            type: deb
+            artifact: Digital-*-arm64.deb
+            name_suffix: "-arm64"
+          - os: ubuntu-24.04-arm
+            arch: arm64
+            type: rpm
+            artifact: Digital-*-arm64.rpm
+            name_suffix: "-arm64"
+          - os: ubuntu-24.04-arm
+            arch: arm64
+            type: appimage
+            artifact: Digital-*-arm64.AppImage
+            name_suffix: "-arm64"
+          - os: macos-latest
+            arch: arm64
+            type: dmg
+            artifact: Digital-*-arm64.dmg
+            name_suffix: "-arm64"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install packaging tools
+        shell: bash
+        run: |
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq rpm
+            if [ "${{ matrix.type }}" = "appimage" ]; then
+              # appimagetool — extract because FUSE is unavailable in CI
+              wget -q -O /tmp/appimagetool "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${{ matrix.arch == 'amd64' && 'x86_64' || 'aarch64' }}.AppImage"
+              chmod +x /tmp/appimagetool
+              /tmp/appimagetool --appimage-extract > /dev/null 2>&1
+              mv squashfs-root /opt/appimagetool
+              ln -sf /opt/appimagetool/AppRun /usr/local/bin/appimagetool
+            fi
+          fi
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            choco install innosetup -y --no-progress
+          fi
+
+      - name: Build installer
+        shell: bash
+        env:
+          PACKAGE_TYPE: ${{ matrix.type }}
+          APP_VERSION: ${{ github.ref_name || '1.0.0' }}
+          WIN_CONSOLE: ${{ inputs.win_console && '1' || '0' }}
+        run: ./packaging/package.sh
+
+      - name: Tag artifact with architecture
+        shell: bash
+        run: |
+          mkdir -p target/dist-tagged
+          ver="$(cat target/dist/.app-version 2>/dev/null || echo '${{ github.ref_name || '1.0.0' }}')"
+          ver="${ver#v}"
+          for f in target/dist/*; do
+            [ -f "$f" ] || continue
+            base="$(basename "$f")"
+            case "$base" in
+              *.deb) ext=".deb" ;;
+              *.rpm) ext=".rpm" ;;
+              *.AppImage) ext=".AppImage" ;;
+              *.exe) ext=".exe" ;;
+              *.msi) ext=".msi" ;;
+              *.dmg) ext=".dmg" ;;
+              *) continue ;;
+            esac
+            cp "$f" "target/dist-tagged/Digital-${ver}${{ matrix.name_suffix }}${ext}"
+          done
+          ls -l target/dist-tagged/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Digital-${{ matrix.arch }}-${{ matrix.type }}
+          path: target/dist-tagged/${{ matrix.artifact }}
+          if-no-files-found: error
+
+  release:
+    needs: package
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create release with artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ls -la dist/
+          gh release create "${{ github.ref_name }}" dist/* \
+            --title "${{ github.ref_name }}" \
+            --generate-notes
